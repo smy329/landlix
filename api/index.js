@@ -7,9 +7,12 @@ import authRouter from './routes/auth.route.js';
 dotenv.config();
 
 mongoose
-  .connect(process.env.MONGODB)
-  .then(() => {
+  .connect(process.env.MONGO, {
+    dbName: 'landlix',
+  })
+  .then((db) => {
     console.log('Connected to database');
+    console.log('Database name:', db.connections[0].name);
   })
   .catch((error) => {
     console.log(error);
@@ -24,3 +27,13 @@ app.listen(3000, () => {
 
 app.use('/api/user', userRouter);
 app.use('/api/auth', authRouter);
+
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Internal Server Error';
+  return res.status(statusCode).json({
+    success: false,
+    statusCode,
+    message,
+  });
+});
